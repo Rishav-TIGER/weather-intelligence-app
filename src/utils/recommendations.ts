@@ -5,7 +5,8 @@ export function generateRecommendations(
   weatherCode: number,
   windSpeed: number,
   precipitation: number = 0,
-  humidity: number = 50
+  humidity: number = 50,
+  precipProbability: number = 0
 ): SmartRecommendation[] {
   const recommendations: SmartRecommendation[] = [];
 
@@ -25,41 +26,65 @@ export function generateRecommendations(
     });
   };
 
-  // --- 1. Weather-Specific Alerts (High Priority) ---
   const isStorm = [95, 96, 99].includes(weatherCode);
-  const isHeavyRain = [65, 82].includes(weatherCode) || precipitation > 10;
+  const isRainyCode = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode);
   const isSnow = [71, 73, 75, 77, 85, 86].includes(weatherCode);
   const isFog = [45, 48].includes(weatherCode);
 
+  // --- 1. Automated "Weather Planning & Actionable Advice" module (Requested Priority Rules) ---
+  
+  // Rule 1: Rain Alert
+  // If precipitation probability > 50% or weather code indicates rain, show: "🌧️ High chance of rain. Carry an umbrella!"
+  if (precipProbability > 50 || isRainyCode) {
+    addRec(
+      'alert',
+      'Rain Alert',
+      '🌧️ High chance of rain. Carry an umbrella!',
+      'warning'
+    );
+  }
+
+  // Rule 2: High Temperature
+  // If temp > 35°C, show: "☀️ Extreme Heat. Stay hydrated and avoid peak midday sun."
+  if (temp > 35) {
+    addRec(
+      'alert',
+      'High Temperature Alert',
+      '☀️ Extreme Heat. Stay hydrated and avoid peak midday sun.',
+      'danger'
+    );
+  }
+
+  // Rule 3: Wind Alert
+  // If wind speed > 30 km/h, show: "💨 High Wind Warning. Secure loose outdoor objects."
+  if (windSpeed > 30) {
+    addRec(
+      'alert',
+      'Wind Alert',
+      '💨 High Wind Warning. Secure loose outdoor objects.',
+      'danger'
+    );
+  }
+
+  // Rule 4: Fair Weather
+  // If temp is 18°C-28°C with no rain, show: "🌤️ Perfect weather for outdoor activities!"
+  const hasRain = (precipProbability > 50 || isRainyCode || precipitation > 0.2);
+  if (temp >= 18 && temp <= 28 && !hasRain) {
+    addRec(
+      'activity',
+      'Fair Weather',
+      '🌤️ Perfect weather for outdoor activities!',
+      'success'
+    );
+  }
+
+  // --- 2. Secondary General Advisory Guidelines ---
   if (isStorm) {
     addRec(
       'alert',
       'Thunderstorm Warning',
       'Severe weather detected. Avoid being outdoors near metal structures or tall trees. Keep electronics unplugged and stay inside.',
       'danger'
-    );
-  } else if (isHeavyRain) {
-    addRec(
-      'alert',
-      'Heavy Rainfall Alert',
-      'Heavy precipitation is expected or occurring. Watch out for localized flooding and reduced road visibility.',
-      'warning'
-    );
-  }
-
-  if (windSpeed > 40) {
-    addRec(
-      'alert',
-      'High Wind Warning',
-      `Strong winds detected at ${windSpeed} km/h. Secure loose outdoor objects, avoid parking under old trees, and expect challenging driving conditions.`,
-      'danger'
-    );
-  } else if (windSpeed > 25) {
-    addRec(
-      'alert',
-      'Breezy Conditions',
-      `Moderate winds around ${windSpeed} km/h. A light windbreaker is recommended if you're spending prolonged periods outdoors.`,
-      'info'
     );
   }
 
@@ -70,16 +95,9 @@ export function generateRecommendations(
       'Freezing conditions exist. Risk of icy roads, black ice, and freezing water pipes. Keep pets indoors and wrap exposed exterior faucets.',
       'danger'
     );
-  } else if (temp > 35) {
-    addRec(
-      'alert',
-      'Extreme Heat Warning',
-      `High temperatures of ${temp}°C detected. Limit strenuous outdoor work, seek air-conditioned spaces, and watch for symptoms of heat exhaustion.`,
-      'danger'
-    );
   }
 
-  // --- 2. Clothing Suggestions ---
+  // --- 3. Clothing Suggestions ---
   if (temp >= 28) {
     addRec(
       'clothing',
@@ -109,7 +127,6 @@ export function generateRecommendations(
       'warning'
     );
   } else {
-    // sub-zero
     addRec(
       'clothing',
       'Heavy Winter Gear',
@@ -118,16 +135,7 @@ export function generateRecommendations(
     );
   }
 
-  // Umbrella check
-  const isRainyCode = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode);
-  if (isRainyCode || precipitation > 0.5) {
-    addRec(
-      'clothing',
-      'Bring an Umbrella',
-      'Rain or drizzle detected. An umbrella, waterproof jacket, or raincoat is highly recommended to stay dry.',
-      'warning'
-    );
-  } else if (weatherCode === 0) {
+  if (weatherCode === 0) {
     addRec(
       'clothing',
       'UV Defense & Sunglasses',
@@ -136,8 +144,8 @@ export function generateRecommendations(
     );
   }
 
-  // --- 3. Activity Planning ---
-  if (isStorm || isHeavyRain) {
+  // --- 4. Activity Planning ---
+  if (isStorm) {
     addRec(
       'activity',
       'Indoor Recreation Preferred',
@@ -158,44 +166,23 @@ export function generateRecommendations(
       'Foggy conditions will restrict visibility. Keep outdoor hiking, driving, or photography to a minimum and proceed with caution.',
       'warning'
     );
-  } else if (temp >= 17 && temp <= 27 && windSpeed < 20) {
+  } else if (temp >= 17 && temp <= 27 && windSpeed < 20 && !hasRain) {
     addRec(
       'activity',
       'Perfect Day for Outdoor Sports',
       'Stellar conditions for outdoor activities: running, cycling, playing tennis, or planning a picnic in the park.',
       'success'
     );
-  } else if (temp >= 10 && temp < 17) {
+  } else if (temp >= 10 && temp < 17 && !hasRain) {
     addRec(
       'activity',
       'Crisp Outdoor Walks',
       'Excellent cool weather for walking, jogging, or a light hike. You won’t overheat, but keep moving to stay warm!',
       'success'
     );
-  } else if (temp > 32) {
-    addRec(
-      'activity',
-      'Limit High-Intensity Workouts',
-      'Avoid jogging or intense cardio in the afternoon peak heat. If active, shift training to early morning or air-conditioned gyms.',
-      'warning'
-    );
-  } else if (temp < 5) {
-    addRec(
-      'activity',
-      'Keep Active Workouts Indoors',
-      'Chilly air can tighten airways and muscles. Perform stretch sessions or weight routines inside to stay warm and prevent strains.',
-      'info'
-    );
-  } else {
-    addRec(
-      'activity',
-      'Moderate Outdoor Exploration',
-      'Weather is acceptable for daily errands and short walks. Keep outdoor sessions reasonable and enjoy the scenery.',
-      'info'
-    );
   }
 
-  // --- 4. Health & Well-being ---
+  // --- 5. Health & Well-being ---
   if (temp >= 28) {
     addRec(
       'health',

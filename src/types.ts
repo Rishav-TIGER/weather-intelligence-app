@@ -18,6 +18,8 @@ export interface CurrentWeather {
   time: string;
   relative_humidity?: number; // Fetched from hourly closest to current time
   precipitation?: number; // Fetched from daily or hourly
+  apparent_temperature?: number; // Apparent temperature / feels like in Celsius
+  precipitation_probability?: number; // Fetched from hourly closest to current time
 }
 
 export interface DailyForecast {

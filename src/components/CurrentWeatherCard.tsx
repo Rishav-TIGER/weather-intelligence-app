@@ -119,7 +119,10 @@ export default function CurrentWeatherCard({ data, isCelsius, onToggleUnit }: Cu
               <div id="current-temp" className="text-5xl md:text-6xl font-black text-slate-100 tracking-tight leading-none">
                 {formatTemp(current.temperature)}
               </div>
-              <div id="current-weather-label" className="text-lg md:text-xl font-bold text-slate-200 mt-2 flex items-center gap-1.5">
+              <p id="feels-like-temp" className="text-xs text-slate-400 mt-1.5 font-semibold">
+                Feels like: <span className="text-slate-200 font-bold">{formatTemp(current.apparent_temperature ?? current.temperature)}</span>
+              </p>
+              <div id="current-weather-label" className="text-lg md:text-xl font-bold text-slate-200 mt-2.5 flex items-center gap-1.5">
                 {weatherInfo.label}
               </div>
             </div>
@@ -153,7 +156,10 @@ export default function CurrentWeatherCard({ data, isCelsius, onToggleUnit }: Cu
               <span className="text-xs font-semibold">Wind</span>
             </div>
             <p id="wind-speed" className="text-base font-bold text-slate-200">
-              {current.windspeed} <span className="text-xs font-normal text-slate-400">km/h</span>
+              {isCelsius 
+                ? `${Math.round(current.windspeed)}` 
+                : `${Math.round(current.windspeed * 0.621371)}`
+              } <span className="text-xs font-normal text-slate-400">{isCelsius ? 'km/h' : 'mph'}</span>
             </p>
             <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
               <Navigation 

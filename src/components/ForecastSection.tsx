@@ -40,11 +40,9 @@ export default function ForecastSection({
   };
 
   const getDayName = (dateStr: string, index: number) => {
-    if (index === 0) return 'Today';
-    
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { weekday: 'long' });
+      return date.toLocaleDateString('en-US', { weekday: 'short' });
     } catch {
       return dateStr;
     }
@@ -120,11 +118,11 @@ export default function ForecastSection({
               }`}>
                 <span className={`flex items-center gap-0.5 font-medium ${isSelected ? 'text-blue-100' : 'text-slate-400'}`} title="Precipitation">
                   <CloudRain className="w-2.5 h-2.5 opacity-80 shrink-0 text-sky-400" />
-                  {precipitation.toFixed(1)}m
+                  {precipitation.toFixed(1)} mm
                 </span>
                 <span className={`flex items-center gap-0.5 font-medium ${isSelected ? 'text-blue-100' : 'text-slate-400'}`} title="Max Wind Speed">
                   <Wind className="w-2.5 h-2.5 opacity-80 shrink-0 text-blue-400" />
-                  {Math.round(maxWind)}
+                  {Math.round(isCelsius ? maxWind : maxWind * 0.621371)} {isCelsius ? 'km/h' : 'mph'}
                 </span>
               </div>
             </button>
