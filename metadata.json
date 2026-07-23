@@ -1,0 +1,6 @@
+{
+  "name": "Weather Intelligence",
+  "description": "A responsive, single-page Weather Intelligence Web Application powered by the public Open-Meteo API, featuring dynamic recommendations, forecasting, and trend charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
